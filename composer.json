@@ -12,12 +12,12 @@
 	],
 	"autoload": {
 		"psr-4": {
-			"link0\\finder\\": "src"
+			"link0\\Finder\\": "src"
 		}
 	},
 	"autoload-dev": {
 		"psr-4": {
-			"link0\\finder\\Tests\\": "tests"
+			"link0\\Finder\\Tests\\": "tests"
 		}
 	},
 	"require-dev": {
