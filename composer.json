@@ -5,15 +5,24 @@
 	"type": "library",
 	"license": "MIT",
 	"authors": [
-	  {
-		"name": "Alexander Landori",
-		"email": "alexander.landori@gmail.com"
-	  }
+		{
+			"name": "Alexander Landori",
+			"email": "alexander.landori@gmail.com"
+		}
 	],
-	"require": {},
 	"autoload": {
 		"psr-4": {
-		  "link0\\finder\\": "src"
+			"link0\\finder\\": "src"
 		}
-	  }
-  }
+	},
+	"require-dev": {
+		"orchestra/testbench": "^8.0"
+	},
+	"extra": {
+		"laravel": {
+			"providers": [
+				"link0\\Finder\\FinderServiceProvider"
+			]
+		}
+	}
+}
