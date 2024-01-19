@@ -1,0 +1,19 @@
+{
+	"name": "link0/finder",
+	"version": "1.0.0",
+	"description": "Simple file content search tool",
+	"type": "library",
+	"license": "MIT",
+	"authors": [
+	  {
+		"name": "Alexander Landori",
+		"email": "alexander.landori@gmail.com"
+	  }
+	],
+	"require": {},
+	"autoload": {
+		"psr-4": {
+		  "link0\\finder\\": "src"
+		}
+	  }
+  }
