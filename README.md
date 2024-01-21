@@ -36,7 +36,7 @@ You can add custom search driver by implementing the `link0\Finder\Interfaces\Fi
 - Add your driver including the full namespace into the finder.drivers config
 ```php
 // ... other configs
-'drivers'				=> [
+'drivers' => [
 	'my_custom_driver' => App\Drivers\MyCustomSearchDriver::class,
 ],
 ```
@@ -48,9 +48,7 @@ You can add custom search driver by implementing the `link0\Finder\Interfaces\Fi
 	- by changing `finder.driver` config
 	```php
 	// ... other configs
-	'driver'				=> [
-		'my_custom_driver' => App\Drivers\MyCustomSearchDriver::class,
-	],
+	'driver' => 'my_custom_driver',
 	```
 	- or setting the driver at the runtime
 	```php
