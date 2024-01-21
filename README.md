@@ -3,7 +3,7 @@
 ### 1. using configuration file
 #### publish the finder configuration by running
 ```shell
-php artisan vendor:publish --provider="link0\Finder\FinderServiceProvider" --tag="config
+php artisan vendor:publish --provider="link0\Finder\FinderServiceProvider" --tag="config"
 ```
 and adjust settings in the `config/finder.php` file
 
@@ -12,6 +12,21 @@ and adjust settings in the `config/finder.php` file
 `config('finder.search_base_path')`
 #### set config value
 `config('finder.search_base_path', '/my/custom/path')`
+
+---
+
+### Configs
+Options applied only on routes published in default `routes/finder.php` file
+| Config name 			|  Default value |
+|:----------------------|:--------------:|
+| route_prefix   		| `finder` 		 |
+| route_middlewares   	|  `['web']`  	 |
+
+Other options
+| Config name 			|  Default value  |
+|:----------------------|:---------------:|
+| search_base_path   	| `base_path()`	  |
+
 
 ## Installing pre-defined stacks
 This installs pre-defined stack with routes, controllers, services, styles etc.
