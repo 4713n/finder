@@ -23,10 +23,52 @@ Options applied only on routes published in default `routes/finder.php` file
 | route_middlewares   	|  `['web']`  	 |
 
 Other options
-| Config name 			|  Default value  |
-|:----------------------|:---------------:|
-| search_base_path   	| `base_path()`	  |
+| Config name 			|  Default value  												| Description 				|
+|:----------------------|:--------------------------------------------------------------|---------------------------|
+| search_base_path   	| `base_path()`	  												| Where to search 			|
+| driver   				| `env('FINDER_DRIVER', 'rg')`									| Active search driver 		|
+| drivers   			| `['rg' => link0\Finder\Drivers\RipGrepSearchDriver::class]` 	| Registered search drivers |
 
+## Adding custom search driver
+You can add custom search driver by implementing the `link0\Finder\Interfaces\FinderInterface`
+
+- Create your custom driver and implement `link0\Finder\Interfaces\FinderInterface`
+- Add your driver including the full namespace into the finder.drivers config
+```php
+// ... other configs
+'drivers'				=> [
+	'my_custom_driver' => App\Drivers\MyCustomSearchDriver::class,
+],
+```
+- activate your driver
+	- by changing `ENV` variable
+	```shell
+	FINDER_DRIVER='my_custom_driver'
+	```
+	- by changing `finder.driver` config
+	```php
+	// ... other configs
+	'driver'				=> [
+		'my_custom_driver' => App\Drivers\MyCustomSearchDriver::class,
+	],
+	```
+	- or setting the driver at the runtime
+	```php
+	use link0\Finder\Interfaces\FinderInterface
+
+	class YourController {
+    	protected FinderInterface $finderService;
+
+		public function __construct(FinderInterface $finderService) {
+			$this->finderService = $finderService;
+		}
+
+		public function search() {
+			// use your driver dynamically
+			$this->finderService->setDriver(app(MyCustomSearchDriver::class));
+		}
+	}
+	```
 
 ## Installing pre-defined stacks
 This installs pre-defined stack with routes, controllers, services, styles etc.
