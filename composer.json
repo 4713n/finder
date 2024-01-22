@@ -20,6 +20,9 @@
 			"link0\\Finder\\Tests\\": "tests"
 		}
 	},
+	"platform": {
+        "php": "^8.2"
+    },
 	"require-dev": {
 		"orchestra/testbench": "^8.0",
 		"phpunit/phpunit": "^10.5"
