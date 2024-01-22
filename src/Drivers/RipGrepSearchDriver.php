@@ -65,7 +65,10 @@ class RipGrepSearchDriver implements FinderInterface {
 						->run($cmd, function(string $type, string $result) use (&$resultsProcessed) {
 							if( $type !== 'out' || empty($result) || $resultsProcessed > $this->resultsLimit ) return;
 
-							event(new SearchResultFoundEvent('info', $result));
+							foreach(explode(PHP_EOL, $result) as $resultLine){
+								if( empty($resultLine) ) continue;
+								event(new SearchResultFoundEvent('info', $resultLine));
+							}
 							
 							$resultsProcessed++;
 						});
