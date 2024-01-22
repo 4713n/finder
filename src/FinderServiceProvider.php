@@ -8,6 +8,7 @@ use Illuminate\Support\ServiceProvider;
 use link0\Finder\Console\InstallFinder;
 use link0\Finder\Drivers\DriverRegistry;
 use link0\Finder\Interfaces\FinderInterface;
+use link0\Finder\Providers\EventServiceProvider;
 
 class FinderServiceProvider extends ServiceProvider {
 	/**
@@ -30,8 +31,11 @@ class FinderServiceProvider extends ServiceProvider {
 
             // select active driver based on configuration
             $driverName = config('finder.driver', 'rg');
-            return $driverRegistry->getDriver($driverName)();	
+            return $driverRegistry->getDriver($driverName)();
         });
+
+		// register events
+		$this->app->register(EventServiceProvider::class);
 	}
 
 	/**
