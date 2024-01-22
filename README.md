@@ -1,3 +1,20 @@
+# Finder - Simple file content search tool
+By default, it uses the ripgrep (https://github.com/BurntSushi/ripgrep) to search for files matching your criteria.
+
+You are free to [create your own search driver](#adding-custom-search-driver)
+
+# TODO:
+
+To get the result on the frontend as quickly as possible, I recommend using **websockets**
+
+You can use for example **soketi** (https://github.com/soketi/soketi), or third-party services like pusher on the server side, and **Laravel echo** (https://github.com/laravel/echo) on the frontend
+
+When the match is found, it triggers `link0\Finder\Events\SearchResultFound` event which implements the `Illuminate\Contracts\Broadcasting\ShouldBroadcastNow` and broadcasts this event
+
+## TODO: Dependencies
+- find
+- ripgrep
+
 ## Configuration
 
 ### 1. using configuration file
@@ -28,6 +45,12 @@ Other options
 | search_base_path   	| `base_path()`	  												| Where to search 			|
 | driver   				| `env('FINDER_DRIVER', 'rg')`									| Active search driver 		|
 | drivers   			| `['rg' => link0\Finder\Drivers\RipGrepSearchDriver::class]` 	| Registered search drivers |
+
+# TODO:
+broadcasting.broadcast_name
+broadcasting.channel_type (public/private, if user is not authenticated, it will fallback to the public channel)
+broadcasting.channel_name
+
 
 ## Adding custom search driver
 You can add custom search driver by implementing the `link0\Finder\Interfaces\FinderInterface`

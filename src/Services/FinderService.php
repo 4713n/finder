@@ -4,6 +4,7 @@ namespace link0\Finder\Services;
 
 use Illuminate\Support\Collection;
 use link0\Finder\Interfaces\FinderInterface;
+use link0\Finder\Interfaces\SearchResultsInterface;
 
 class FinderService {
 	protected FinderInterface $driver;
@@ -25,7 +26,7 @@ class FinderService {
 	 * @param array $options
 	 * @return Collection
 	 */
-	public function search(string $query, string $path, array $options): Collection {
+	public function search(string $query, string $path, array $options): SearchResultsInterface {
 		return $this->driver->search($query, $path, $options);
 	}
 
