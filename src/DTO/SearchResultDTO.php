@@ -3,9 +3,10 @@
 namespace link0\Finder\DTO;
 
 use Illuminate\Support\Collection;
+use Illuminate\Contracts\Support\Arrayable;
 use link0\Finder\Interfaces\SearchResultsInterface;
 
-class SearchResultDTO implements SearchResultsInterface
+class SearchResultDTO implements SearchResultsInterface, Arrayable
 {
     private float $duration;
     private int $total;
@@ -49,6 +50,15 @@ class SearchResultDTO implements SearchResultsInterface
 
     public function setResults(array|string|Collection $results): void
     {
-        $this->results = collect(is_string($results) ? explode(PHP_EOL, $results) : $results);
+        $this->results = collect(is_string($results) ? array_filter(explode(PHP_EOL, $results)) : $results);
     }
+
+	public function toArray(): array {
+		return [
+			'duration' => $this->getDuration(),
+			'total' => $this->getTotal(),
+			'path' => $this->getPath(),
+			'results' => $this->getResults(),
+		];
+	}
 }
