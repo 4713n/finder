@@ -9,7 +9,11 @@ To get the result on the frontend as quickly as possible, I recommend using **we
 
 You can use for example **soketi** (https://github.com/soketi/soketi), or third-party services like pusher on the server side, and **Laravel echo** (https://github.com/laravel/echo) on the frontend
 
-When the match is found, it triggers `link0\Finder\Events\SearchResultFound` event which implements the `Illuminate\Contracts\Broadcasting\ShouldBroadcastNow` and broadcasts this event
+When the match is found, it triggers `link0\Finder\Events\SearchResultFoundEvent` event
+
+You can implement your own listener and handle the event by yourself
+
+In that case, I recommend turning off the broadcasting functionality provided by the package, by setting the `broadcasting.method` config to empty value
 
 ## TODO: Dependencies
 - find
@@ -33,20 +37,29 @@ and adjust settings in the `config/finder.php` file
 ---
 
 ### Configs
-Options applied only on routes published in default `routes/finder.php` file
-| Config name 			|  Default value |
-|:----------------------|:--------------:|
-| route_prefix   		| `finder` 		 |
-| route_middlewares   	|  `['web']`  	 |
+#### Options applied only on routes published in default `routes/finder.php` file
+| Config name 			|  Default value | Description 					|
+|:----------------------|:--------------:|------------------------------|
+| route_prefix   		| `finder` 		 | Prefix for default routes provided by package (located in **routes/finder.php**)
+| route_middlewares   	|  `['web']`  	 | Middlewares for default routes provided by package (located in **routes/finder.php**)
 
-Other options
+#### Broadcasting options
+| Config name 			|  Default value  												| Description 				|
+|:----------------------|:--------------------------------------------------------------|---------------------------|
+| broadcasting.broadcast_name 	| `link0\Finder\Events\SearchResultFoundBroadcastEvent` | Event name you will listen to on the frontend
+| broadcasting.channel_name		| `finder.results`										| If you use private channel, user id will be automatically appended, so the final channel will be in the format `finder.results.{user_id}`
+| broadcasting.channel_type		| `private`												| `[public/private]` User must be authenticated, otherwise `public` will be used
+| broadcasting.method			| `websockets`											| Broadcast every search result using websockets. If you change or leave it blank, you will disable the broadcasting provided by the package
+
+#### Other options
 | Config name 			|  Default value  												| Description 				|
 |:----------------------|:--------------------------------------------------------------|---------------------------|
 | search_base_path   	| `base_path()`	  												| Where to search 			|
 | driver   				| `env('FINDER_DRIVER', 'rg')`									| Active search driver 		|
-| drivers   			| `['rg' => link0\Finder\Drivers\RipGrepSearchDriver::class]` 	| Registered search drivers |
+| drivers   			| `['rg' => link0\Finder\Drivers\RipGrepSearchDriver::class]` 	| Registered search drivers (you can change during runtime) |
 
 # TODO:
+broadcast_method
 broadcasting.broadcast_name
 broadcasting.channel_type (public/private, if user is not authenticated, it will fallback to the public channel)
 broadcasting.channel_name
