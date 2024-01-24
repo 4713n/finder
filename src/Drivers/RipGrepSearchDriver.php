@@ -37,44 +37,60 @@ class RipGrepSearchDriver implements FinderInterface {
 		$searchResults->setResults([]);
 		
 		// construct find
-		$find_iname = $this->getFindFilesFilterParam($options['filename'] ?? '*'); 
-		$find_timeFilter = $this->getFindMtimeFilterParam($options['newer_than'] ?? null, $options['older_than'] ?? null);
-		$find_includePaths = $this->getFindIncludePathsParam($options['included_paths'] ?? []);
-		$find_excludePaths = $this->getFindExcludePathsParam($options['excluded_paths'] ?? []);
+		$find_iname = $this->getFindFilesFilterParam($options['filenamePattern'] ?? '*', $options['extensionPatterns'] ?? []); 
+		$find_timeFilter = $this->getFindMtimeFilterParam($options['newerThan'] ?? null, $options['olderThan'] ?? null);
+		$find_includePaths = $this->getFindIncludePathsParam($options['includedPaths'] ?? []);
+		$find_excludePaths = $this->getFindExcludePathsParam($options['excludedPaths'] ?? []);
 
 		$find_cmd = "export LC_ALL=C; find . -type f {$find_iname} {$find_includePaths} {$find_excludePaths} {$find_timeFilter} -print0 2>/dev/null";
 
 		// construct grep
-		$grep_options = (isset($options['insensitive']) ? 'i' : '') . 
+		$grep_options = (isset($options['caseSensitive']) ? '' : 'i') . 
 						'lI' . 
-						(isset($options['regex']) ? 'Pe' : 'F') . 
-						(isset($options['files_not_matching']) ? ' --files-without-match' : '');
+						(isset($options['useRegex']) ? 'Pe' : 'F') . 
+						(isset($options['filesWithoutMatch']) ? ' --files-without-match' : '');
 		
-		$grep_cmd = " rg -j10 -{$grep_options} " . $this->mb_escapeshellarg( $query );
+		$grep_cmd = "rg -j10 -{$grep_options} {$this->mb_escapeshellarg($query)}";
 
-		$cmd = "{$find_cmd} | xargs -0 -n 500 {$grep_cmd}";
+		$search_cmd = "{$find_cmd} | xargs -0 -n 500 {$grep_cmd} | tee " . escapeshellarg($this->resultsTempFile);
 
-		// there can be multiple matches for one file - get only unique filenames
-		//$cmd .= " | uniq ";
-
+		// start search
 		$startTime = microtime(true);
 		
 		$resultsProcessed = 0;
-		$process = Process::timeout($this->searchTimeout)
-						->path($workingDir)
-						->run($cmd, function(string $type, string $result) use (&$resultsProcessed) {
-							if( $type !== 'out' || empty($result) || $resultsProcessed > $this->resultsLimit ) return;
+		Process::path($workingDir)
+				->timeout($this->searchTimeout)
+				->quietly()
+				->run($search_cmd, function(string $type, string $result) use (&$resultsProcessed) {
+					if( $type !== 'out' || empty($result) || $resultsProcessed > $this->resultsLimit ) return;
 
-							foreach(explode(PHP_EOL, $result) as $resultLine){
-								if( empty($resultLine) ) continue;
-								event(new SearchResultFoundEvent('info', $resultLine));
-							}
-							
-							$resultsProcessed++;
-						});
+					foreach(explode(PHP_EOL, $result) as $resultLine){
+						if( empty($resultLine) ) continue;
+						event(new SearchResultFoundEvent('info', $resultLine));
+						$resultsProcessed++;
+					}
+				});
 		
 		$searchResults->setDuration(microtime(true) - $startTime);
+
+		// read results
+		$results_cmd = "head -{$this->resultsLimit} " . escapeshellarg($this->resultsTempFile) . " | cut -c 1-{$this->lineLengthLimit}";
+		
+		$process = Process::timeout($this->searchTimeout)->run($results_cmd);
+		
 		$searchResults->setResults($process->output());
+		
+		// number of total results
+		$total_cmd = 'wc -l < ' . escapeshellarg($this->resultsTempFile);
+
+		$process = Process::timeout($this->searchTimeout)->run($total_cmd);
+		
+		$searchResults->setTotal(intval(trim($process->output())));
+
+		// TODO: remove
+		$searchResults->setAdditionalData([
+			'cmd' => $search_cmd,
+		]);
 
 		return $searchResults;
 	}
