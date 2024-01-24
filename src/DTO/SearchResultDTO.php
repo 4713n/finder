@@ -6,12 +6,13 @@ use Illuminate\Support\Collection;
 use Illuminate\Contracts\Support\Arrayable;
 use link0\Finder\Interfaces\SearchResultsInterface;
 
-class SearchResultDTO implements SearchResultsInterface, Arrayable
+class SearchResultDTO implements SearchResultsInterface
 {
     private float $duration;
     private int $total;
     private string $path;
     private Collection $results;
+	private Collection $additionalData;
 
     public function getDuration(): float
     {
@@ -54,11 +55,14 @@ class SearchResultDTO implements SearchResultsInterface, Arrayable
     }
 
 	public function toArray(): array {
-		return [
-			'duration' => $this->getDuration(),
-			'total' => $this->getTotal(),
-			'path' => $this->getPath(),
-			'results' => $this->getResults(),
-		];
+		return get_object_vars($this);
+	}
+
+	public function getAdditionalData(): Collection {
+		return $this->additionalData;
+	}
+
+    public function setAdditionalData(array|string|Collection $data): void {
+		$this->additionalData = collect(is_string($data) ? array_filter(explode(PHP_EOL, $data)) : $data);
 	}
 }

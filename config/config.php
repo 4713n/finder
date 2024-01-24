@@ -13,6 +13,5 @@ return [
 		'broadcast_name'	=> 'link0\Finder\Events\SearchResultFoundBroadcastEvent',
 		'channel_name'		=> 'finder.results',
 		'channel_type'		=> 'private',
-		''
 	],
 ];

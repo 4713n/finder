@@ -3,8 +3,9 @@
 namespace link0\Finder\Interfaces;
 
 use Illuminate\Support\Collection;
+use Illuminate\Contracts\Support\Arrayable;
 
-interface SearchResultsInterface {
+interface SearchResultsInterface extends Arrayable {
     public function getDuration(): float;
 
     public function setDuration(float $duration): void;
@@ -20,4 +21,8 @@ interface SearchResultsInterface {
     public function getResults(): Collection;
 
     public function setResults(array|string|Collection $results): void;
+
+	public function getAdditionalData(): Collection;
+
+    public function setAdditionalData(array|string|Collection $data): void;
 }
