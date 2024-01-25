@@ -10,7 +10,7 @@ class SearchResultFoundListener {
         $broadcastMethod = config('finder.broadcasting.method');
 
         if ($broadcastMethod === 'websockets') {
-            event(new SearchResultFoundBroadcastEvent($event->type, $event->message, $event->data));
+			broadcast(new SearchResultFoundBroadcastEvent($event->type, $event->message, $event->data));
         }
     }
 }

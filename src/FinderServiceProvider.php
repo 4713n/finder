@@ -9,6 +9,7 @@ use link0\Finder\Console\InstallFinder;
 use link0\Finder\Drivers\DriverRegistry;
 use link0\Finder\Interfaces\FinderInterface;
 use link0\Finder\Providers\EventServiceProvider;
+use link0\Finder\Providers\BroadcastServiceProvider;
 
 class FinderServiceProvider extends ServiceProvider {
 	/**
@@ -36,6 +37,9 @@ class FinderServiceProvider extends ServiceProvider {
 
 		// register events
 		$this->app->register(EventServiceProvider::class);
+
+		// register channels
+		$this->app->register(BroadcastServiceProvider::class);
 	}
 
 	/**
@@ -52,7 +56,12 @@ class FinderServiceProvider extends ServiceProvider {
 			
 			$this->publishes([
                 __DIR__.'/../routes/web.php' => base_path('routes/finder.php'),
+                __DIR__.'/../routes/channels.php' => base_path('routes/channels_finder.php'),
             ], 'routes');
+
+			$this->publishes([
+                __DIR__.'/../Channels/FinderChannel.php' => base_path('app/Channels/FinderChannel.php'),
+            ], 'channels');
 
 			$this->commands([
 				InstallFinder::class,

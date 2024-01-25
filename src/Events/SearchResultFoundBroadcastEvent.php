@@ -14,6 +14,8 @@ class SearchResultFoundBroadcastEvent extends BroadcastNowEvent {
 	 */
 	public function __construct(string $type, string $message = '', array $data = []) {
 		parent::__construct($type, $message, $data);
+
+		var_dump('broadcasting ' . $message . ' as ' . $this->broadcastAs() . ' on ' . json_encode($this->broadcastOn())); 
 	}
 
 	/**
@@ -33,9 +35,13 @@ class SearchResultFoundBroadcastEvent extends BroadcastNowEvent {
 		$channelName = config('finder.broadcasting.channel_name', 'finder.results');
 
         if( $channelType === 'public' || ! Auth::user() ){
-            return new Channel($channelName);
+            return [
+				new Channel($channelName)
+			];
         }
 
-		return new PrivateChannel("{$channelName}." . auth()->user()->id);
+		return [
+			new PrivateChannel("{$channelName}." . auth()->user()->id)
+		];
 	}
 }
