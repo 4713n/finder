@@ -37,7 +37,7 @@ class RipGrepSearchDriver implements FinderInterface {
 		$searchResults->setResults([]);
 		
 		// construct find
-		$find_iname = $this->getFindFilesFilterParam($options['filenamePattern'] ?? '*', $options['extensionPatterns'] ?? []); 
+		$find_iname = $this->getFindFilesFilterParam($options['filenamePattern'] ?? '*', $options['extensionPatterns'] ?? ['*']); 
 		$find_timeFilter = $this->getFindMtimeFilterParam($options['newerThan'] ?? null, $options['olderThan'] ?? null);
 		$find_includePaths = $this->getFindIncludePathsParam($options['includedPaths'] ?? []);
 		$find_excludePaths = $this->getFindExcludePathsParam($options['excludedPaths'] ?? []);
@@ -45,10 +45,10 @@ class RipGrepSearchDriver implements FinderInterface {
 		$find_cmd = "export LC_ALL=C; find . -type f {$find_iname} {$find_includePaths} {$find_excludePaths} {$find_timeFilter} -print0 2>/dev/null";
 
 		// construct grep
-		$grep_options = (isset($options['caseSensitive']) ? '' : 'i') . 
+		$grep_options = (isset($options['caseSensitive']) && $options['caseSensitive'] ? '' : 'i') . 
 						'lI' . 
-						(isset($options['useRegex']) ? 'Pe' : 'F') . 
-						(isset($options['filesWithoutMatch']) ? ' --files-without-match' : '');
+						(isset($options['useRegex']) && $options['useRegex'] ? 'Pe' : 'F') . 
+						(isset($options['filesWithoutMatch']) && $options['filesWithoutMatch'] ? ' --files-without-match' : '');
 		
 		$grep_cmd = "rg -j10 -{$grep_options} {$this->mb_escapeshellarg($query)}";
 
@@ -91,6 +91,8 @@ class RipGrepSearchDriver implements FinderInterface {
 		$searchResults->setAdditionalData([
 			'cmd' => $search_cmd,
 		]);
+
+		if( is_file($this->resultsTempFile) ) unlink($this->resultsTempFile);
 
 		return $searchResults;
 	}
@@ -154,9 +156,9 @@ class RipGrepSearchDriver implements FinderInterface {
 		$extensionsList = array_values($extensions); // reindex possible associative array
 		$result = '\( ';
 		foreach($extensionsList as $i => $extension){
-			$result .= '-iname ' . escapeshellarg("*{$filename}.{$extension}") . ($i+1 < count($extensions) ? '-o ' : '');
+			$result .= '-iname ' . escapeshellarg("{$filename}.{$extension}") . ($i+1 < count($extensions) ? '-o ' : '');
 		}
-		$result .= '\)';
+		$result .= ' \)';
 
 		return $result;
 	}
@@ -192,7 +194,7 @@ class RipGrepSearchDriver implements FinderInterface {
 	 * @return string
 	 */
 	private function getFindExcludePathsParam(array $excludePaths): string {
-		return implode(' ', array_map(function($excludePath){ return '-path ' . escapeshellarg($excludePath); }, $excludePaths));
+		return implode(' ', array_map(function($excludePath){ return '-not -path ' . escapeshellarg($excludePath); }, $excludePaths));
 	}
 
 	/**
