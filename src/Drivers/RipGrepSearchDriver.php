@@ -3,9 +3,11 @@
 namespace link0\Finder\Drivers;
 
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use link0\Finder\DTO\SearchResultDTO;
-use Illuminate\Support\Facades\Process;
+use Symfony\Component\Process\Process;
+use link0\Finder\Events\SearchStartedEvent;
 use link0\Finder\Interfaces\FinderInterface;
 use link0\Finder\Events\SearchResultFoundEvent;
 use link0\Finder\Interfaces\SearchResultsInterface;
@@ -16,6 +18,7 @@ class RipGrepSearchDriver implements FinderInterface {
 	private int $lineLengthLimit;
 	private string $resultsTempFile;
 	private int $searchTimeout;
+	private string $activeSearchKeyPrefix;
 
 	/**
 	 * @throws Exception
@@ -25,6 +28,7 @@ class RipGrepSearchDriver implements FinderInterface {
 		$this->lineLengthLimit = 500;
 		$this->resultsTempFile = tempnam("/tmp", "finder.");
 		$this->searchTimeout = 60*3;
+		$this->activeSearchKeyPrefix = 'link0.finder.search.';
 	}
 
 	public function search(string $query, string $path, array $options): SearchResultsInterface {
@@ -46,46 +50,62 @@ class RipGrepSearchDriver implements FinderInterface {
 
 		// construct grep
 		$grep_options = (isset($options['caseSensitive']) && $options['caseSensitive'] ? '' : 'i') . 
-						'lI' . 
 						(isset($options['useRegex']) && $options['useRegex'] ? 'Pe' : 'F') . 
 						(isset($options['filesWithoutMatch']) && $options['filesWithoutMatch'] ? ' --files-without-match' : '');
 		
-		$grep_cmd = "rg -j10 -{$grep_options} {$this->mb_escapeshellarg($query)}";
+		$grep_cmd = "rg -j10 -lc -{$grep_options} {$this->mb_escapeshellarg($query)}";
 
-		$search_cmd = "{$find_cmd} | xargs -0 -n 500 {$grep_cmd} | tee " . escapeshellarg($this->resultsTempFile);
+		$search_cmd = "cd " . escapeshellarg($workingDir) . " && {$find_cmd} | xargs --no-run-if-empty -0 -n 500 {$grep_cmd} | tee " . escapeshellarg($this->resultsTempFile);
 
 		// start search
-		$startTime = microtime(true);
-		
 		$resultsProcessed = 0;
-		Process::path($workingDir)
-				->timeout($this->searchTimeout)
-				->quietly()
-				->run($search_cmd, function(string $type, string $result) use (&$resultsProcessed) {
-					if( $type !== 'out' || empty($result) || $resultsProcessed > $this->resultsLimit ) return;
-
-					foreach(explode(PHP_EOL, $result) as $resultLine){
-						if( empty($resultLine) ) continue;
-						event(new SearchResultFoundEvent('info', $resultLine));
-						$resultsProcessed++;
-					}
-				});
+		$process = Process::fromShellCommandline($search_cmd, $workingDir)
+				->setTimeout($this->searchTimeout)
+				->disableOutput();
 		
-		$searchResults->setDuration(microtime(true) - $startTime);
+		$process->start(function(string $type, string $result) use (&$resultsProcessed) {
+			if( $type !== Process::OUT || empty($result) || $resultsProcessed > $this->resultsLimit ) return;
+
+			event(new SearchResultFoundEvent('info', '', explode(PHP_EOL, $result)));
+		});
+
+		$pid = $process->getPid();
+		
+		$searchId = $this->getSearchId($pid);
+
+		$this->setActiveSearch($searchId);
+
+		event(new SearchStartedEvent($searchId));
+		
+		// check every 200 ms, if search wasnt requested to stop
+		while( $process->isRunning() ){
+			if( ! $this->isSearchActive($searchId) ){
+				$process->stop(1, 9);
+				break;
+			}
+
+			usleep(200000);
+		}
+
+		$this->clearActiveSearch($searchId);
+
+		$searchResults->setDuration(microtime(true) - $process->getStartTime());
 
 		// read results
 		$results_cmd = "head -{$this->resultsLimit} " . escapeshellarg($this->resultsTempFile) . " | cut -c 1-{$this->lineLengthLimit}";
 		
-		$process = Process::timeout($this->searchTimeout)->run($results_cmd);
+		$process = Process::fromShellCommandline($results_cmd)->setTimeout($this->searchTimeout);
+		$process->run();
 		
-		$searchResults->setResults($process->output());
+		$searchResults->setResults($process->getOutput());
 		
 		// number of total results
 		$total_cmd = 'wc -l < ' . escapeshellarg($this->resultsTempFile);
 
-		$process = Process::timeout($this->searchTimeout)->run($total_cmd);
+		$process = Process::fromShellCommandline($total_cmd)->setTimeout($this->searchTimeout);
+		$process->run();
 		
-		$searchResults->setTotal(intval(trim($process->output())));
+		$searchResults->setTotal(intval(trim($process->getOutput())));
 
 		// TODO: remove
 		$searchResults->setAdditionalData([
@@ -95,6 +115,18 @@ class RipGrepSearchDriver implements FinderInterface {
 		if( is_file($this->resultsTempFile) ) unlink($this->resultsTempFile);
 
 		return $searchResults;
+	}
+
+	/**
+	 * Stop search process
+	 *
+	 * @param string $searchId
+	 * @return bool
+	 */
+	public function stop(string $searchId): bool {
+		$this->clearActiveSearch($searchId);
+
+		return true;
 	}
 
 	/**
@@ -154,11 +186,11 @@ class RipGrepSearchDriver implements FinderInterface {
 	 */
 	private function getFindFilesFilterParam(string $filename, array $extensions = []): string {
 		$extensionsList = array_values($extensions); // reindex possible associative array
-		$result = '\( ';
+		$result = '\(';
 		foreach($extensionsList as $i => $extension){
-			$result .= '-iname ' . escapeshellarg("{$filename}.{$extension}") . ($i+1 < count($extensions) ? '-o ' : '');
+			$result .= ' -iname ' . escapeshellarg("{$filename}.{$extension}") . ($i+1 < count($extensions) ? ' -o ' : ' ');
 		}
-		$result .= ' \)';
+		$result .= '\)';
 
 		return $result;
 	}
@@ -209,4 +241,47 @@ class RipGrepSearchDriver implements FinderInterface {
 		return "'" . str_replace("'", "'\"'\"'", $arg) . "'";
 		//return "'" . str_replace("'", "'\\''", $arg) . "'";
 	}
+
+	/**
+	 * Get search ID by search process PID
+	 *
+	 * @param integer|string $pid
+	 * @return string
+	 */
+	public function getSearchId(int|string $pid): string {
+		return md5(session_id() . (int)$pid);
+	}
+
+	/**
+	 * Set active search by search ID
+	 *
+	 * @param string $searchId
+	 * @param int $timeout
+	 * @return void
+	 */
+	private function setActiveSearch(string $searchId, int $timeout = null){
+		Cache::set("{$this->activeSearchKeyPrefix}.{$searchId}", true, $timeout ?? $this->searchTimeout);
+	}
+
+	/**
+	 * Clear active search by search ID
+	 *
+	 * @param string $searchId
+	 * @return void
+	 */
+	private function clearActiveSearch(string $searchId){
+		Cache::delete("{$this->activeSearchKeyPrefix}.{$searchId}");
+	}
+
+	/**
+	 * Check if search is active by search ID
+	 *
+	 * @param string $searchId
+	 * @return void
+	 */
+	private function isSearchActive(string $searchId): bool {
+		return Cache::get("{$this->activeSearchKeyPrefix}.{$searchId}", false) === true;
+	}
+
+
 }

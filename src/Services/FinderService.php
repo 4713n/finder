@@ -31,6 +31,17 @@ class FinderService {
 	}
 
 	/**
+	 * Stop the search
+	 *
+	 * @param string $searchId
+	 * @throws Exception
+	 * @return bool
+	 */
+	public function stop(string $searchId): bool {
+		return $this->driver->stop($searchId);
+	}
+
+	/**
 	 * Set search driver
 	 *
 	 * @param FinderInterface $driver

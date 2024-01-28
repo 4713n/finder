@@ -7,20 +7,20 @@ use Illuminate\Support\Facades\Auth;
 use link0\Finder\Events\BroadcastNowEvent;
 use Illuminate\Broadcasting\PrivateChannel;
 
-class SearchResultFoundBroadcastEvent extends BroadcastNowEvent {
+class SearchStartedBroadcastEvent extends BroadcastNowEvent {
 
 	/**
 	 * Create broadcast event
 	 */
-	public function __construct(string $type, string $message = '', array $data = []) {
-		parent::__construct($type, $message, $data); 
+	public function __construct(string $searchId, array $data = []) {
+		parent::__construct('info', $searchId, $data); 
 	}
 
 	/**
 	 * The event's broadcast name
 	 */
 	public function broadcastAs(): string {
-		$broadcastName = 'App\Events\SearchResultFoundBroadcastEvent';
+		$broadcastName = 'App\Events\SearchStartedBroadcastEvent';
 
 		return $broadcastName;
 	}
