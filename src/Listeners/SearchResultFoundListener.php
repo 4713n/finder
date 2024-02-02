@@ -13,22 +13,23 @@ class SearchResultFoundListener {
             foreach($event->data as $result){
                 if( empty($result) ) continue;
 
-                broadcast(new SearchResultFoundBroadcastEvent($event->type, $result, ['parsed' => $this->getParsedResult($result)]));
+                broadcast(new SearchResultFoundBroadcastEvent($event->type, $event->message, ['parsed' => $this->getParsedResult($result)]));
             }
         }
     }
 
     private function getParsedResult($result): array {
-        $lastColonPosition = strrpos($result, ':');
+		$cleanedResult = substr($result, 0, 2) === './' ? '/' . substr($result, 2) : $result;
+        $lastColonPosition = strrpos($cleanedResult, ':');
         
-        $file = substr($result, 0, $lastColonPosition ?: null);
+        $file = substr($cleanedResult, 0, $lastColonPosition ?: null);
        
         $lastDotPosition = strrpos($file, '.');
 
         $filename = substr($file, 0, $lastDotPosition ?: null);
 
         $extension = $lastDotPosition !== false ? substr($file, $lastDotPosition + 1) : '';
-        $matchesCount = $lastColonPosition !== false ? (int)substr($result, $lastColonPosition + 1) : '';
+        $matchesCount = $lastColonPosition !== false ? (int)substr($cleanedResult, $lastColonPosition + 1) : '';
 
         return [
             'file'              => $filename,

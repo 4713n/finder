@@ -42,6 +42,18 @@ class FinderService {
 	}
 
 	/**
+	 * Get context around the match
+	 *
+	 * @param string $query
+	 * @param string $filePath
+	 * @param array $options
+	 * @return 
+	 */
+	public function getContext(string $query, string $filePath, array $options): Collection {
+		return $this->driver->getContext($query, $filePath, $options);
+	}
+
+	/**
 	 * Set search driver
 	 *
 	 * @param FinderInterface $driver

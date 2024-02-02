@@ -2,15 +2,20 @@
 
 namespace link0\Finder\Drivers;
 
+use ValueError;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use link0\Finder\DTO\SearchResultDTO;
+use link0\Finder\DTO\SearchContextDTO;
 use Symfony\Component\Process\Process;
+use link0\Finder\Enums\SearchContextType;
 use link0\Finder\Events\SearchStartedEvent;
 use link0\Finder\Interfaces\FinderInterface;
 use link0\Finder\Events\SearchResultFoundEvent;
+use link0\Finder\Interfaces\SearchContextInterface;
 use link0\Finder\Interfaces\SearchResultsInterface;
+use Symfony\Component\HttpFoundation\Exception\JsonException;
 
 class RipGrepSearchDriver implements FinderInterface {
 
@@ -19,6 +24,7 @@ class RipGrepSearchDriver implements FinderInterface {
 	private string $resultsTempFile;
 	private int $searchTimeout;
 	private string $activeSearchKeyPrefix;
+	private string $rgBinary;
 
 	/**
 	 * @throws Exception
@@ -29,6 +35,7 @@ class RipGrepSearchDriver implements FinderInterface {
 		$this->resultsTempFile = tempnam("/tmp", "finder.");
 		$this->searchTimeout = 60*3;
 		$this->activeSearchKeyPrefix = 'link0.finder.search.';
+		$this->rgBinary = 'rg';
 	}
 
 	public function search(string $query, string $path, array $options): SearchResultsInterface {
@@ -49,11 +56,10 @@ class RipGrepSearchDriver implements FinderInterface {
 		$find_cmd = "export LC_ALL=C; find . -type f {$find_iname} {$find_includePaths} {$find_excludePaths} {$find_timeFilter} -print0 2>/dev/null";
 
 		// construct grep
-		$grep_options = (isset($options['caseSensitive']) && $options['caseSensitive'] ? '' : 'i') . 
-						(isset($options['useRegex']) && $options['useRegex'] ? 'Pe' : 'F') . 
-						(isset($options['filesWithoutMatch']) && $options['filesWithoutMatch'] ? ' --files-without-match' : '');
+		$grep_options = $this->getGrepParams($options);
+		$grep_options .= ' -j10 -lc';
 		
-		$grep_cmd = "rg -j10 -lc -{$grep_options} {$this->mb_escapeshellarg($query)}";
+		$grep_cmd = "{$this->rgBinary} {$grep_options} {$this->mb_escapeshellarg($query)}";
 
 		$search_cmd = "cd " . escapeshellarg($workingDir) . " && {$find_cmd} | xargs --no-run-if-empty -0 -n 500 {$grep_cmd} | tee " . escapeshellarg($this->resultsTempFile);
 
@@ -127,6 +133,51 @@ class RipGrepSearchDriver implements FinderInterface {
 		$this->clearActiveSearch($searchId);
 
 		return true;
+	}
+
+	/**
+	 * Get context around the match
+	 *
+	 * @param string $query
+	 * @param string $filePath
+	 * @param array $options
+	 * @return Collection
+	 */
+	public function getContext(string $query, string $filePath, array $options): Collection {
+		$grep_options = $this->getGrepParams($options);
+		$grep_options .= ' -j10 -C3 --json'; // TODO: allow to customize context size
+
+		$grep_cmd = "{$this->rgBinary} {$grep_options} {$this->mb_escapeshellarg($query)} " . escapeshellarg(config('finder.search_base_path') . $filePath);
+
+		$process = Process::fromShellCommandline($grep_cmd)->setTimeout($this->searchTimeout);
+		$process->run();
+		$results = array_filter(explode(PHP_EOL, trim($process->getOutput())));
+
+		$searchContextItems = new Collection;
+		foreach($results as $resultJson){
+			$searchContext = new SearchContextDTO();
+			
+			try {
+				$result = json_decode($resultJson, true, 512, JSON_THROW_ON_ERROR|JSON_UNESCAPED_UNICODE);
+			} catch(JsonException $e) {
+				continue;
+			}
+
+			if( !empty($result['type']) ){
+				try {
+					$searchContext->setType(SearchContextType::from($result['type']));
+				} catch(ValueError $e) {
+					continue;
+				}
+			}
+
+			if( !empty($result['data']) && !empty($result['data']['lines']) && !empty($result['data']['lines']['text']) ) $searchContext->setLine($result['data']['lines']['text']);
+			if( !empty($result['data']) && !empty($result['data']['line_number']) && !empty($result['data']['line_number']) ) $searchContext->setLineNumber($result['data']['line_number']);
+
+			$searchContextItems->push($searchContext);
+		}
+
+		return $searchContextItems;
 	}
 
 	/**
@@ -210,6 +261,32 @@ class RipGrepSearchDriver implements FinderInterface {
 	}
 
 	/**
+	 * Get grep options string based on options
+	 *
+	 * @param array $options
+	 * @return string
+	 */
+	private function getGrepParams(array $options): string {
+		$optionItems = [];
+
+		if( !empty($options['caseSensitive'] )){
+			$optionItems[] = '-i';
+		}
+		
+		if( !empty($options['useRegex']) ){
+			$optionItems[] = '-Pe';
+		} else {
+			$optionItems[] = '-F';
+		}
+		
+		if( !empty($options['filesWithoutMatch']) ){
+			$optionItems[] = '--files-without-match';
+		}		
+
+		return implode(' ', $optionItems);
+	}
+
+	/**
 	 * Get find include paths param
 	 *
 	 * @param array $includePaths
@@ -283,5 +360,24 @@ class RipGrepSearchDriver implements FinderInterface {
 		return Cache::get("{$this->activeSearchKeyPrefix}.{$searchId}", false) === true;
 	}
 
+	/**
+	 * Set custom rg binary path
+	 *
+	 * @param string $binary
+	 * @return self
+	 */
+	public function setBinary(string $binary): self {
+		$this->rgBinary = $binary;
 
+		return $this;
+	}
+
+	/**
+	 * Get currently set rg binary path
+	 *
+	 * @return string
+	 */
+	public function getBinary(): string {
+		return $this->rgBinary;
+	}
 }
