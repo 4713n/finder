@@ -9,7 +9,7 @@ To get the result on the frontend as quickly as possible, I recommend using **we
 
 You can use for example **soketi** (https://github.com/soketi/soketi), or third-party services like pusher on the server side, and **Laravel echo** (https://github.com/laravel/echo) on the frontend
 
-When the match is found, it triggers `link0\Finder\Events\SearchResultFoundEvent` event
+When the match is found, it triggers `Link000\Finder\Events\SearchResultFoundEvent` event
 
 You can implement your own listener and handle the event by yourself
 
@@ -24,7 +24,7 @@ In that case, I recommend turning off the broadcasting functionality provided by
 ### 1. using configuration file
 #### publish the finder configuration by running
 ```shell
-php artisan vendor:publish --provider="link0\Finder\FinderServiceProvider" --tag="config"
+php artisan vendor:publish --provider="Link000\Finder\FinderServiceProvider" --tag="config"
 ```
 and adjust settings in the `config/finder.php` file
 
@@ -46,7 +46,7 @@ and adjust settings in the `config/finder.php` file
 #### Broadcasting options
 | Config name 			|  Default value  												| Description 				|
 |:----------------------|:--------------------------------------------------------------|---------------------------|
-| broadcasting.broadcast_name 	| `link0\Finder\Events\SearchResultFoundBroadcastEvent` | Event name you will listen to on the frontend
+| broadcasting.broadcast_name 	| `Link000\Finder\Events\SearchResultFoundBroadcastEvent` | Event name you will listen to on the frontend
 | broadcasting.channel_name		| `finder.results`										| If you use private channel, user id will be automatically appended, so the final channel will be in the format `finder.results.{user_id}`
 | broadcasting.channel_type		| `private`												| `[public/private]` User must be authenticated, otherwise `public` will be used
 | broadcasting.method			| `websockets`											| Broadcast every search result using websockets. If you change or leave it blank, you will disable the broadcasting provided by the package
@@ -56,7 +56,7 @@ and adjust settings in the `config/finder.php` file
 |:----------------------|:--------------------------------------------------------------|---------------------------|
 | search_base_path   	| `base_path()`	  												| Where to search 			|
 | driver   				| `env('FINDER_DRIVER', 'rg')`									| Active search driver 		|
-| drivers   			| `['rg' => link0\Finder\Drivers\RipGrepSearchDriver::class]` 	| Registered search drivers (you can change during runtime) |
+| drivers   			| `['rg' => Link000\Finder\Drivers\RipGrepSearchDriver::class]` 	| Registered search drivers (you can change during runtime) |
 
 # TODO:
 broadcast_method
@@ -66,9 +66,9 @@ broadcasting.channel_name
 
 
 ## Adding custom search driver
-You can add custom search driver by implementing the `link0\Finder\Interfaces\FinderInterface`
+You can add custom search driver by implementing the `Link000\Finder\Interfaces\FinderInterface`
 
-- Create your custom driver and implement `link0\Finder\Interfaces\FinderInterface`
+- Create your custom driver and implement `Link000\Finder\Interfaces\FinderInterface`
 - Add your driver including the full namespace into the finder.drivers config
 ```php
 // ... other configs
@@ -88,7 +88,7 @@ You can add custom search driver by implementing the `link0\Finder\Interfaces\Fi
 	```
 	- or setting the driver at the runtime
 	```php
-	use link0\Finder\Interfaces\FinderInterface
+	use Link000\Finder\Interfaces\FinderInterface
 
 	class YourController {
     	protected FinderInterface $finderService;

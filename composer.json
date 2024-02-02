@@ -1,5 +1,5 @@
 {
-	"name": "link0/finder",
+	"name": "link000/finder",
 	"version": "1.0.0",
 	"description": "Simple file content search tool",
 	"type": "library",
@@ -12,15 +12,15 @@
 	],
 	"autoload": {
 		"psr-4": {
-			"link0\\Finder\\": "src"
+			"Link000\\Finder\\": "src"
 		}
 	},
 	"autoload-dev": {
 		"psr-4": {
-			"link0\\Finder\\Tests\\": "tests"
+			"Link000\\Finder\\Tests\\": "tests"
 		}
 	},
-	"platform": {
+	"require": {
         "php": "^8.2"
     },
 	"require-dev": {
@@ -30,7 +30,7 @@
 	"extra": {
 		"laravel": {
 			"providers": [
-				"link0\\Finder\\FinderServiceProvider"
+				"Link000\\Finder\\FinderServiceProvider"
 			]
 		}
 	}

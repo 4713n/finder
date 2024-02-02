@@ -1,10 +1,10 @@
 <?php
 
-namespace link0\Finder\DTO;
+namespace Link000\Finder\DTO;
 
 use Illuminate\Support\Collection;
 use Illuminate\Contracts\Support\Arrayable;
-use link0\Finder\Interfaces\SearchResultsInterface;
+use Link000\Finder\Interfaces\SearchResultsInterface;
 
 class SearchResultDTO implements SearchResultsInterface
 {

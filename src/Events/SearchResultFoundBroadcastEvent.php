@@ -1,10 +1,10 @@
 <?php
 
-namespace link0\Finder\Events;
+namespace Link000\Finder\Events;
 
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Support\Facades\Auth;
-use link0\Finder\Events\BroadcastNowEvent;
+use Link000\Finder\Events\BroadcastNowEvent;
 use Illuminate\Broadcasting\PrivateChannel;
 
 class SearchResultFoundBroadcastEvent extends BroadcastNowEvent {

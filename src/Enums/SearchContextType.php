@@ -1,5 +1,5 @@
 <?php
-namespace link0\Finder\Enums;
+namespace Link000\Finder\Enums;
 
 enum SearchContextType: string {
 	case CONTEXT = 'context';

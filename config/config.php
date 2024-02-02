@@ -6,11 +6,11 @@ return [
 	'route_middlewares' 	=> ['web'],
 	'driver'				=> env('FINDER_DRIVER', 'rg'),
 	'drivers'				=> [
-		'rg' => link0\Finder\Drivers\RipGrepSearchDriver::class,
+		'rg' => Link000\Finder\Drivers\RipGrepSearchDriver::class,
 	],
 	'broadcasting' => [
 		'method' 			=> 'websockets',
-		'broadcast_name'	=> 'link0\Finder\Events\SearchResultFoundBroadcastEvent',
+		'broadcast_name'	=> 'Link000\Finder\Events\SearchResultFoundBroadcastEvent',
 		'channel_name'		=> 'finder.results',
 		'channel_type'		=> 'private',
 	],

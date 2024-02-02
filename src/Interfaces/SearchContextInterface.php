@@ -1,9 +1,9 @@
 <?php
 
-namespace link0\Finder\Interfaces;
+namespace Link000\Finder\Interfaces;
 
 use Illuminate\Support\Collection;
-use link0\Finder\Enums\SearchContextType;
+use Link000\Finder\Enums\SearchContextType;
 use Illuminate\Contracts\Support\Arrayable;
 
 interface SearchContextInterface extends Arrayable {

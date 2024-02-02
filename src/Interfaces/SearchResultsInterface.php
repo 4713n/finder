@@ -1,6 +1,6 @@
 <?php
 
-namespace link0\Finder\Interfaces;
+namespace Link000\Finder\Interfaces;
 
 use Illuminate\Support\Collection;
 use Illuminate\Contracts\Support\Arrayable;

@@ -1,20 +1,20 @@
 <?php
 
-namespace link0\Finder\Drivers;
+namespace Link000\Finder\Drivers;
 
 use ValueError;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
-use link0\Finder\DTO\SearchResultDTO;
-use link0\Finder\DTO\SearchContextDTO;
+use Link000\Finder\DTO\SearchResultDTO;
+use Link000\Finder\DTO\SearchContextDTO;
 use Symfony\Component\Process\Process;
-use link0\Finder\Enums\SearchContextType;
-use link0\Finder\Events\SearchStartedEvent;
-use link0\Finder\Interfaces\FinderInterface;
-use link0\Finder\Events\SearchResultFoundEvent;
-use link0\Finder\Interfaces\SearchContextInterface;
-use link0\Finder\Interfaces\SearchResultsInterface;
+use Link000\Finder\Enums\SearchContextType;
+use Link000\Finder\Events\SearchStartedEvent;
+use Link000\Finder\Interfaces\FinderInterface;
+use Link000\Finder\Events\SearchResultFoundEvent;
+use Link000\Finder\Interfaces\SearchContextInterface;
+use Link000\Finder\Interfaces\SearchResultsInterface;
 use Symfony\Component\HttpFoundation\Exception\JsonException;
 
 class RipGrepSearchDriver implements FinderInterface {
@@ -34,7 +34,7 @@ class RipGrepSearchDriver implements FinderInterface {
 		$this->lineLengthLimit = 500;
 		$this->resultsTempFile = tempnam("/tmp", "finder.");
 		$this->searchTimeout = 60*3;
-		$this->activeSearchKeyPrefix = 'link0.finder.search.';
+		$this->activeSearchKeyPrefix = 'Link000.finder.search.';
 		$this->rgBinary = 'rg';
 	}
 

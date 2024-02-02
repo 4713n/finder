@@ -1,15 +1,15 @@
 <?php
 
-namespace link0\Finder;
+namespace Link000\Finder;
 
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
-use link0\Finder\Console\InstallFinder;
-use link0\Finder\Drivers\DriverRegistry;
-use link0\Finder\Interfaces\FinderInterface;
-use link0\Finder\Providers\EventServiceProvider;
-use link0\Finder\Providers\BroadcastServiceProvider;
+use Link000\Finder\Console\InstallFinder;
+use Link000\Finder\Drivers\DriverRegistry;
+use Link000\Finder\Interfaces\FinderInterface;
+use Link000\Finder\Providers\EventServiceProvider;
+use Link000\Finder\Providers\BroadcastServiceProvider;
 
 class FinderServiceProvider extends ServiceProvider {
 	/**

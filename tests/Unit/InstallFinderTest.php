@@ -1,10 +1,10 @@
 <?php
 
-namespace link0\Finder\Tests\Unit;
+namespace Link000\Finder\Tests\Unit;
 
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
-use link0\Finder\Tests\TestCase;
+use Link000\Finder\Tests\TestCase;
 
 class InstallFinderTest extends TestCase {
 	const CONFIG_FILENAME = 'finder.php';

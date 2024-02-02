@@ -1,10 +1,10 @@
 <?php
 
-namespace link0\Finder\Services;
+namespace Link000\Finder\Services;
 
 use Illuminate\Support\Collection;
-use link0\Finder\Interfaces\FinderInterface;
-use link0\Finder\Interfaces\SearchResultsInterface;
+use Link000\Finder\Interfaces\FinderInterface;
+use Link000\Finder\Interfaces\SearchResultsInterface;
 
 class FinderService {
 	protected FinderInterface $driver;

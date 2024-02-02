@@ -1,6 +1,6 @@
 <?php
 
-namespace link0\Finder\Providers;
+namespace Link000\Finder\Providers;
 
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;

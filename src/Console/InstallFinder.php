@@ -1,6 +1,6 @@
 <?php
 
-namespace link0\Finder\Console;
+namespace Link000\Finder\Console;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
@@ -39,7 +39,7 @@ class InstallFinder extends Command {
 
     private function publishConfiguration($forcePublish = false) {
         $params = [
-            '--provider' => "link0\Finder\FinderServiceProvider",
+            '--provider' => "Link000\Finder\FinderServiceProvider",
             '--tag' => "config"
         ];
 

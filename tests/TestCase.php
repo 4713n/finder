@@ -1,8 +1,8 @@
 <?php
 
-namespace link0\Finder\Tests;
+namespace Link000\Finder\Tests;
 
-use link0\Finder\FinderServiceProvider;
+use Link000\Finder\FinderServiceProvider;
 
 class TestCase extends \Orchestra\Testbench\TestCase {
 	public function setUp(): void {

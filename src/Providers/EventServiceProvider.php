@@ -1,12 +1,12 @@
 <?php
 
-namespace link0\Finder\Providers;
+namespace Link000\Finder\Providers;
 
-use link0\Finder\Events\SearchResultFoundEvent;
-use link0\Finder\Listeners\SearchResultFoundListener;
+use Link000\Finder\Events\SearchResultFoundEvent;
+use Link000\Finder\Listeners\SearchResultFoundListener;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-use link0\Finder\Events\SearchStartedEvent;
-use link0\Finder\Listeners\SearchStartedListener;
+use Link000\Finder\Events\SearchStartedEvent;
+use Link000\Finder\Listeners\SearchStartedListener;
 
 class EventServiceProvider extends ServiceProvider {
 	protected $listen = [

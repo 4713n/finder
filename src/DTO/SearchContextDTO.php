@@ -1,10 +1,10 @@
 <?php
 
-namespace link0\Finder\DTO;
+namespace Link000\Finder\DTO;
 
 use Illuminate\Support\Collection;
-use link0\Finder\Enums\SearchContextType;
-use link0\Finder\Interfaces\SearchContextInterface;
+use Link000\Finder\Enums\SearchContextType;
+use Link000\Finder\Interfaces\SearchContextInterface;
 
 class SearchContextDTO implements SearchContextInterface {
 	private SearchContextType $type;

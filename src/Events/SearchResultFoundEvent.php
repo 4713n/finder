@@ -1,6 +1,6 @@
 <?php
 
-namespace link0\Finder\Events;
+namespace Link000\Finder\Events;
 
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;

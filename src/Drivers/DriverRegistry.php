@@ -1,6 +1,6 @@
 <?php
 
-namespace link0\Finder\Drivers;
+namespace Link000\Finder\Drivers;
 
 use Illuminate\Support\Collection;
 

@@ -1,9 +1,9 @@
 <?php
 
-namespace link0\Finder\Listeners;
+namespace Link000\Finder\Listeners;
 
-use link0\Finder\Events\SearchStartedEvent;
-use link0\Finder\Events\SearchStartedBroadcastEvent;
+use Link000\Finder\Events\SearchStartedEvent;
+use Link000\Finder\Events\SearchStartedBroadcastEvent;
 
 class SearchStartedListener {
     public function handle(SearchStartedEvent $event) {
