@@ -56,8 +56,8 @@ class RipGrepSearchDriver implements FinderInterface {
 		$find_cmd = "export LC_ALL=C; find . -type f {$find_iname} {$find_includePaths} {$find_excludePaths} {$find_timeFilter} -print0 2>/dev/null";
 
 		// construct grep
-		$grep_options = $this->getGrepParams($options);
-		$grep_options .= ' -j10 -lc';
+		$grep_options = '-j10 -lc';
+		$grep_options .= ' ' . $this->getGrepParams($options);
 		
 		$grep_cmd = "{$this->rgBinary} {$grep_options} {$this->mb_escapeshellarg($query)}";
 
@@ -144,8 +144,8 @@ class RipGrepSearchDriver implements FinderInterface {
 	 * @return Collection
 	 */
 	public function getContext(string $query, string $filePath, array $options): Collection {
-		$grep_options = $this->getGrepParams($options);
-		$grep_options .= ' -j10 -C3 --json'; // TODO: allow to customize context size
+		$grep_options = '-j10 -C3 --json'; // TODO: allow to customize context size
+		$grep_options .= ' ' . $this->getGrepParams($options);
 
 		$grep_cmd = "{$this->rgBinary} {$grep_options} {$this->mb_escapeshellarg($query)} " . escapeshellarg(config('finder.search_base_path') . $filePath);
 
@@ -269,19 +269,22 @@ class RipGrepSearchDriver implements FinderInterface {
 	private function getGrepParams(array $options): string {
 		$optionItems = [];
 
-		if( !empty($options['caseSensitive'] )){
+		if( empty($options['caseSensitive'] )){
 			$optionItems[] = '-i';
+		} else {
+			$optionItems[] = '-S';
 		}
-		
+				
+		if( !empty($options['filesWithoutMatch']) ){
+			$optionItems[] = '--files-without-match';
+		}		
+
+		// must be as last param (before query)
 		if( !empty($options['useRegex']) ){
 			$optionItems[] = '-Pe';
 		} else {
 			$optionItems[] = '-F';
 		}
-		
-		if( !empty($options['filesWithoutMatch']) ){
-			$optionItems[] = '--files-without-match';
-		}		
 
 		return implode(' ', $optionItems);
 	}
